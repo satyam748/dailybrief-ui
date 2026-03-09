@@ -12,6 +12,16 @@
         <p class="tagline">The most important stories, nothing more.</p>
         <div class="rule"></div>
       </div>
+       <nav class="categories">
+        <button
+          v-for="cat in categories"
+          :key="cat.value"
+          :class="{ active: selectedCategory === cat.value }"
+          @click="selectCategory(cat.value)"
+        >
+          {{ cat.label }}
+        </button>
+      </nav>
     </header>
 
     <!-- Main content -->
@@ -65,6 +75,18 @@ import { fetchNews } from "../services/newsService"
 const news = ref([])
 const loading = ref(true)
 const error = ref(null)
+const selectedCategory = ref(null)
+
+const categories = [
+  { label: "Top", value: "top" },
+  { label: "World", value: "world" },
+  { label: "Tech", value: "technology" },
+  { label: "Business", value: "business" },
+  { label: "Science", value: "science" },
+  { label: "Sports", value: "sports" },
+  { label: "Entertainment", value: "entertainment" },
+  { label: "Health", value: "health" },
+]
 
 const today = computed(() => {
   return new Date().toLocaleDateString('en-US', {
@@ -76,12 +98,17 @@ async function loadNews() {
   loading.value = true
   error.value = null
   try {
-    news.value = await fetchNews()
+    news.value = await fetchNews(selectedCategory.value)
   } catch (e) {
     error.value = "Couldn't load stories. Please try again."
   } finally {
     loading.value = false
   }
+}
+
+function selectCategory(category) {
+  selectedCategory.value = category
+  loadNews()
 }
 
 onMounted(loadNews)
@@ -251,5 +278,36 @@ body {
 @media (max-width: 600px) {
   .header { padding: 28px 16px 0; }
   .content { padding: 8px 16px 40px; }
+}
+
+.categories {
+  display: flex;
+  gap: 4px;
+  padding: 16px 0 0;
+  overflow-x: auto;
+}
+
+.categories button {
+  font-family: 'Source Serif 4', serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  padding: 8px 14px;
+  color: #9e9991;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.categories button:hover {
+  color: #1a1a18;
+}
+
+.categories button.active {
+  color: #b5813a;
+  border-bottom-color: #b5813a;
 }
 </style>
