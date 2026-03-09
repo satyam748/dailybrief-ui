@@ -61,7 +61,7 @@
     </main>
 
     <footer class="footer">
-      <p>Daily Brief · Updated every 15 minutes</p>
+      <p>Daily Brief · Built by Satyam · Updated every 15 minutes</p>
     </footer>
 
   </div>
