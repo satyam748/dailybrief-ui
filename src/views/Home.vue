@@ -54,22 +54,17 @@
       <!-- News list -->
       <div v-else>
         <!-- First card is featured -->
-        <NewsCard
-          v-if="news.length > 0"
-          :article="news[0]"
-          :featured="true"
-        />
-
+        <NewsCard v-if="news.length > 0" :article="news[0]" :featured="true"/>
         <!-- Rest of the cards -->
-        <NewsCard
-          v-for="article in news.slice(1)"
-          :key="article.url"
-          :article="article"
-        />
-
+        <NewsCard v-for="article in news.slice(1)" :key="article.url" :article="article"/>
         <p v-if="news.length === 0" class="empty">No stories found. Check back soon.</p>
+        <div id="scroll-sentinel"></div>
+        <div v-if="loadingMore" class="loading-more">
+          <div class="loading-bar"></div>
+        </div>
+        <p v-if="!hasMore && news.length > 0" class="end-message">You're all caught up.</p>
       </div>
-
+      
     </main>
 
     <footer class="footer">
@@ -80,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, onMounted, computed, nextTick } from "vue"
 import NewsCard from "../components/NewsCard.vue"
 import { fetchNews, searchNews } from "../services/newsService"
 
@@ -91,6 +86,9 @@ const selectedCategory = ref(null)
 const isDark = ref(false)
 const searchQuery = ref('')
 const isSearchMode = ref(false)
+const nextPageToken = ref(null)
+const hasMore = ref(true)
+const loadingMore = ref(false)
 
 const categories = [
   { label: "Top",           value: "top" },
@@ -134,11 +132,33 @@ async function loadNews() {
   loading.value = true
   error.value = null
   try {
-    news.value = await fetchNews(selectedCategory.value)
+    const data = await fetchNews(selectedCategory.value)
+    news.value = data.articles
+    nextPageToken.value = data.nextPage
+    if (!data.nextPage) hasMore.value = false
   } catch (e) {
     error.value = "Couldn't load stories. Please try again."
   } finally {
     loading.value = false
+  }
+}
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value || !nextPageToken.value) return
+  loadingMore.value = true
+  try {
+    const data = await fetchNews(selectedCategory.value, nextPageToken.value)
+    if (!data.articles.length) {
+      hasMore.value = false
+    } else {
+      news.value = [...news.value, ...data.articles]
+      nextPageToken.value = data.nextPage
+      if (!data.nextPage) hasMore.value = false
+    }
+  } catch (e) {
+    hasMore.value = false
+  } finally {
+    loadingMore.value = false
   }
 }
 
@@ -170,7 +190,19 @@ function clearSearch() {
 onMounted(() => {
   initTheme()
   loadNews()
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      loadMore()
+    }
+  }, { threshold: 0.1 })
+  
+  nextTick(() => {
+    const sentinel = document.querySelector('#scroll-sentinel')
+    if (sentinel) observer.observe
+  })
 })
+
 </script>
 
 <style>

@@ -2,8 +2,10 @@ import axios from "axios"
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-export async function fetchNews(category = null) {
-  const params = category ? { category } : {}
+export async function fetchNews(category = null, pageToken = null) {
+  const params = {}
+  if(category) params.category = category
+  if(pageToken) params.pageToken = pageToken
   const res = await axios.get(`${BASE_URL}/news`, { params })
   return res.data
 }
