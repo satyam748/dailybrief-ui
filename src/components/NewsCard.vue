@@ -3,7 +3,7 @@
     <div class="card-meta">
       <span class="source">{{ article.source }}</span>
       <span class="dot">·</span>
-      <span class="read-time">2 min read</span>
+      <span class="read-time">{{ publishedTime }}</span>
     </div>
 
     <h2 class="card-title">{{ article.title }}</h2>
@@ -18,13 +18,13 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue"
+import { timeAgo } from '@/services/newsService';
+const props = defineProps({
   article: Object,
-  featured: {
-    type: Boolean,
-    default: false
-  }
+  featured: { type: Boolean, default: false}
 })
+const publishedTime = computed(() => timeAgo(props.article.publishedAt))
 </script>
 
 <style scoped>

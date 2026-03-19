@@ -386,9 +386,6 @@ body {
   white-space: nowrap;
 }
 
-.categories button:first-child { margin-left: 24px; }
-.categories button:last-child  { margin-right: 24px; }
-
 .categories button:hover { color: var(--text-primary); }
 
 .categories button.active {
