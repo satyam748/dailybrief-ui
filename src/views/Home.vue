@@ -12,6 +12,16 @@
         </div>
         <h1 class="masthead">Daily Brief</h1>
         <p class="tagline">The most important stories, nothing more.</p>
+        <div class="search-bar">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search stories…"
+            @keyup.enter="handleSearch"
+          />
+          <button @click="handleSearch" :disabled="!searchQuery.trim()">→</button>
+          <button v-if="isSearchMode" class="clear-btn" @click="clearSearch">✕</button>
+        </div>
         <div class="rule"></div>
       </div>
       <nav class="categories">
@@ -72,13 +82,15 @@
 <script setup>
 import { ref, onMounted, computed } from "vue"
 import NewsCard from "../components/NewsCard.vue"
-import { fetchNews } from "../services/newsService"
+import { fetchNews, searchNews } from "../services/newsService"
 
 const news = ref([])
 const loading = ref(true)
 const error = ref(null)
 const selectedCategory = ref(null)
 const isDark = ref(false)
+const searchQuery = ref('')
+const isSearchMode = ref(false)
 
 const categories = [
   { label: "Top",           value: "top" },
@@ -132,6 +144,26 @@ async function loadNews() {
 
 function selectCategory(category) {
   selectedCategory.value = category
+  loadNews()
+}
+
+async function handleSearch() {
+  if (!searchQuery.value.trim()) return
+  loading.value = true
+  error.value = null
+  isSearchMode.value = true
+  try {
+    news.value = await searchNews(searchQuery.value.trim())
+  } catch (e) {
+    error.value = "Search failed. Please try again."
+  } finally {
+    loading.value = false
+  }
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  isSearchMode.value = false
   loadNews()
 }
 
@@ -393,4 +425,59 @@ body {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+}
+
+.search-bar input {
+  flex: 1;
+  font-family: 'Source Serif 4', serif;
+  font-size: 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  padding: 8px 4px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.search-bar input:focus {
+  border-bottom-color: var(--accent);
+}
+
+.search-bar button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  transition: transform 0.2s ease;
+}
+
+.search-bar button:hover { transform: translateX(2px); }
+.search-bar button:disabled { opacity: 0.3; cursor: default; }
+
+.clear-btn {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+}
+
+.clear-btn:hover {
+  transform: none !important;
+  opacity: 0.7;
+}
+
 </style>

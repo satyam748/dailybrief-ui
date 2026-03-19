@@ -8,6 +8,11 @@ export async function fetchNews(category = null) {
   return res.data
 }
 
+export async function searchNews(query) {
+  const res = await axios.get(`${BASE_URL}/news/search`, { params: { q: query } })
+  return res.data
+}
+
 export function timeAgo(dateStr) {
   if (!dateStr) return ''
 
