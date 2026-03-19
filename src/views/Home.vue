@@ -5,7 +5,6 @@
     <header class="header">
       <div class="header-inner">
         <div class="header-top">
-          <span class="edition">Morning Edition</span>
           <span class="date">{{ today }}</span>
           <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
             {{ isDark ? '☀️' : '🌙' }}
@@ -214,7 +213,7 @@ body {
   margin-bottom: 20px;
 }
 
-.edition, .date {
+.date {
   font-family: 'Source Serif 4', serif;
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -266,7 +265,7 @@ body {
 /* Content */
 .content {
   flex: 1;
-  max-width: 680px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 8px 24px 48px;
   width: 100%;
@@ -363,10 +362,12 @@ body {
 .categories {
   display: flex;
   gap: 4px;
-  padding: 16px 0 0;
+  padding: 16px 24px 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  max-width: 760px;   
+  margin: 0 auto;
 }
 
 .categories::-webkit-scrollbar { display: none; }
