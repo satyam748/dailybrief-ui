@@ -64,7 +64,7 @@
         </div>
         <p v-if="!hasMore && news.length > 0" class="end-message">You're all caught up.</p>
       </div>
-      
+
     </main>
 
     <footer class="footer">
@@ -140,14 +140,21 @@ async function loadNews() {
     error.value = "Couldn't load stories. Please try again."
   } finally {
     loading.value = false
+    await nextTick()
+    setupObserver()
   }
 }
 
 async function loadMore() {
-  if (loadingMore.value || !hasMore.value || !nextPageToken.value) return
+  console.log('loadMore called, token:', nextPageToken.value)
+  if (loadingMore.value || !hasMore.value || !nextPageToken.value) {
+    console.log('loadMore called, token:', nextPageToken.value)
+    return
+  }
   loadingMore.value = true
   try {
     const data = await fetchNews(selectedCategory.value, nextPageToken.value)
+      console.log('loaded more:', data.articles.length, 'next token:', data.nextPage)
     if (!data.articles.length) {
       hasMore.value = false
     } else {
@@ -187,20 +194,22 @@ function clearSearch() {
   loadNews()
 }
 
+function setupObserver() {
+  const sentinel = document.querySelector('#scroll-sentinel')
+  console.log('Sentinel found:', sentinel)
+  if (!sentinel) return
+
+  const observer = new IntersectionObserver((entries) => {
+    console.log('Observer fired:', entries[0].isIntersecting)
+    if (entries[0].isIntersecting) loadMore()
+  }, { threshold: 0.1 })
+
+  observer.observe(sentinel)
+}
+
 onMounted(() => {
   initTheme()
   loadNews()
-
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      loadMore()
-    }
-  }, { threshold: 0.1 })
-  
-  nextTick(() => {
-    const sentinel = document.querySelector('#scroll-sentinel')
-    if (sentinel) observer.observe
-  })
 })
 
 </script>
